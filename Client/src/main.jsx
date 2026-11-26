@@ -4,7 +4,7 @@ import * as XLSX from 'xlsx';
 import { Gift, Plus, Trash2, Users, Mail, CalendarDays, Sparkles, ShieldCheck, PartyPopper } from 'lucide-react';
 import './styles.css';
 
-const API = import.meta.env.VITE_API_URL || 'https://localhost:7001';
+const API = import.meta.env.VITE_API_URL || '';
 const emptyPerson = () => ({ name: '', email: '' });
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const invalidInputStyle = { borderColor: '#d75b57', boxShadow: '0 0 0 3px rgba(215, 91, 87, 0.08)' };
