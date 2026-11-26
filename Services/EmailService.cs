@@ -9,10 +9,10 @@ public class EmailService(IConfiguration config)
     public async Task SendAssignmentAsync(SecretSantaEvent santaEvent, Participant recipient, Participant assigned)
     {
         var section = config.GetSection("Email");
-        var host = section["Host"];
-        var username = section["Username"];
-        var password = section["Password"];
-        var from = section["FromEmail"];
+        var host = section["Host"]?.Trim();
+        var username = section["Username"]?.Trim();
+        var password = section["Password"]?.Replace(" ", "");
+        var from = section["FromEmail"]?.Trim();
         if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(from))
             throw new InvalidOperationException("Email SMTP settings are incomplete. Configure Email:Host, Username, Password and FromEmail.");
 
@@ -24,10 +24,12 @@ public class EmailService(IConfiguration config)
             Body = $"<div style='font-family:Arial,sans-serif;max-width:560px;margin:auto;padding:28px;color:#243047;background:#fff8f0;border-radius:16px'><h1 style='color:#b42335'>Ho Ho Ho! 🎅</h1><p>Hello {WebUtility.HtmlEncode(recipient.Name)},</p><p>Your Secret Santa assignment is ready!</p><div style='background:#fff;padding:22px;border-radius:12px;text-align:center'><p>You are the Secret Santa for</p><h2 style='color:#16845b'>{WebUtility.HtmlEncode(assigned.Name)}</h2></div>{(santaEvent.GiftBudget is null ? "" : $"<p>Gift budget: {santaEvent.GiftBudget:C}</p>")}{(santaEvent.ExchangeDate is null ? "" : $"<p>Gift exchange date: {santaEvent.ExchangeDate:dd MMM yyyy}</p>")}<p>Keep it secret until the big reveal. Happy gifting! 🎁</p></div>"
         };
         message.To.Add(recipient.Email);
-        using var client = new SmtpClient(host, int.TryParse(section["Port"], out var port) ? port : 587)
+        using var client = new SmtpClient(host, int.TryParse(section["Port"]?.Trim(), out var port) ? port : 587)
         {
-            EnableSsl = bool.TryParse(section["EnableSsl"], out var ssl) && ssl,
-            Credentials = new NetworkCredential(username, password)
+            EnableSsl = bool.TryParse(section["EnableSsl"]?.Trim(), out var ssl) && ssl,
+            UseDefaultCredentials = false,
+            Credentials = new NetworkCredential(username, password),
+            Timeout = 30000
         };
         await client.SendMailAsync(message);
     }

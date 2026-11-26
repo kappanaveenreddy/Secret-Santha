@@ -61,14 +61,15 @@ public class EventsController(AppDbContext db, EmailService email, IConfiguratio
         await db.SaveChangesAsync();
 
         var sent = 0;
+        var failures = new List<object>();
         foreach (var santa in item.Participants)
         {
             var assigned = item.Participants.Single(p => p.Id == santa.AssignedParticipantId);
             try { await email.SendAssignmentAsync(item, santa, assigned); santa.EmailSent = true; santa.EmailError = null; sent++; }
-            catch (Exception ex) { santa.EmailSent = false; santa.EmailError = ex.Message; }
+            catch (Exception ex) { santa.EmailSent = false; santa.EmailError = ex.Message; failures.Add(new { santa.Name, santa.Email, error = ex.Message }); }
             await db.SaveChangesAsync();
         }
-        return Ok(new { message = "Draw completed. Email delivery results are shown below.", total = item.Participants.Count, sent, failed = item.Participants.Count - sent });
+        return Ok(new { message = "Draw completed. Email delivery results are shown below.", total = item.Participants.Count, sent, failed = item.Participants.Count - sent, failures });
     }
 
     private static bool IsValidEmail(string email) => System.Net.Mail.MailAddress.TryCreate(email, out var address) && address.Address == email.Trim();
