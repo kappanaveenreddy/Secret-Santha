@@ -48,7 +48,7 @@ public class EventsController(AppDbContext db, EmailService email, IConfiguratio
     [HttpPost("{id:int}/draw-and-email")]
     public async Task<IActionResult> DrawAndEmail(int id)
     {
-        if (!IsAdmin()) return Unauthorized();
+        //if (!IsAdmin()) return Unauthorized();
         var item = await db.Events.Include(e => e.Participants).FirstOrDefaultAsync(e => e.Id == id);
         if (item is null) return NotFound();
         if (item.AssignmentsGenerated) return Conflict("Assignments have already been generated. Create a new event to run another draw.");
