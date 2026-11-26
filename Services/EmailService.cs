@@ -9,13 +9,13 @@ public class EmailService(IConfiguration config)
     public async Task SendAssignmentAsync(SecretSantaEvent santaEvent, Participant recipient, Participant assigned)
     {
         var section = config.GetSection("Email");
-        var host = (config["Email__Host"] ?? config["Smtp_Host"] ?? section["Host"])?.Trim();
-        var username = (config["Email__Username"] ?? config["Smtp_Username"] ?? section["Username"])?.Trim();
-        var password = (config["Email__Password"] ?? config["Smtp_Password"] ?? section["Password"])?.Replace(" ", "");
-        var from = (config["Email__FromEmail"] ?? config["Smtp_FromEmail"] ?? section["FromEmail"] ?? username)?.Trim();
-        var portText = config["Email__Port"] ?? config["Smtp_Port"] ?? section["Port"] ?? "587";
-        var sslText = config["Email__EnableSsl"] ?? config["Smtp_EnableSsl"] ?? section["EnableSsl"] ?? "true";
-        var fromName = config["Email__FromName"] ?? config["Smtp_FromName"] ?? section["FromName"] ?? "Secret Santa";
+        var host = (section["Host"] ?? config["Smtp_Host"])?.Trim();
+        var username = (section["Username"] ?? config["Smtp_Username"])?.Trim();
+        var password = (section["Password"] ?? config["Smtp_Password"])?.Replace(" ", "");
+        var from = (section["FromEmail"] ?? config["Email__FromEmail"] ?? config["Smtp_FromEmail"] ?? username)?.Trim();
+        var portText = section["Port"] ?? config["Smtp_Port"] ?? "587";
+        var sslText = section["EnableSsl"] ?? config["Smtp_EnableSsl"] ?? "true";
+        var fromName = section["FromName"] ?? config["Email__FromName"] ?? config["Smtp_FromName"] ?? "Secret Santa";
         if (string.IsNullOrWhiteSpace(host) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(from))
             throw new InvalidOperationException("Email SMTP settings are incomplete. Configure Email:Host, Username, Password and FromEmail.");
 
